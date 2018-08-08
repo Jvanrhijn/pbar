@@ -6,6 +6,7 @@ A tiny header-only progress bar library for C++.
 
 ```~cpp
 #include <iostream>
+#include <unistd.h>
 #include "pbar.h"
 
 using namespace pbar;
