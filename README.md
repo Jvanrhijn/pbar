@@ -4,7 +4,7 @@ A tiny header-only progress bar library for C++.
 
 **Usage**
 
-```~cpp
+~~~cpp
 #include <iostream>
 #include <unistd.h>
 #include "pbar.h"
@@ -20,7 +20,7 @@ int main() {
     usleep(us);
   }
 }
-```
+~~~
 
 **Credits**
 
