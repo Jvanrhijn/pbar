@@ -1,5 +1,8 @@
 #include <iostream>
 
+#ifndef __PBAR_H
+#define __PBAR_H
+
 namespace pbar {
 
 class ProgressBar {
@@ -41,3 +44,4 @@ std::ostream& operator<<(std::ostream &stream, const ProgressBar &pbar) {
 
 }; // namespace pbar
 
+#endif // __PBAR_H
