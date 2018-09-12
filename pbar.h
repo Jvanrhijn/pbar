@@ -10,10 +10,7 @@ public:
   ProgressBar(int width, const char symbol)
       : width_(width), symbol_(symbol), pos_(0) {}
 
-  ProgressBar Update(float percentage) {
-      pos_ = width_*percentage;
-      return *this;
-  }
+  ProgressBar Update(float percentage);
 
   friend std::ostream& operator<<(std::ostream &steam, const ProgressBar &pbar);
 
@@ -27,7 +24,12 @@ private:
 
 }; // class ProgressBar
 
-std::ostream& operator<<(std::ostream &stream, const ProgressBar &pbar) {
+inline ProgressBar ProgressBar::Update(float percentage) {
+      pos_ = width_*percentage;
+      return *this;
+  }
+
+inline std::ostream& operator<<(std::ostream &stream, const ProgressBar &pbar) {
     stream << pbar.left_delim_;
     for (int i=0; i<pbar.width_; i++) {
         if (i < pbar.pos_)
