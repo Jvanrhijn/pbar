@@ -1,18 +1,63 @@
 #include <iostream>
+#include <iterator>
 
 #ifndef __PBAR_H
 #define __PBAR_H
 
 namespace pbar {
 
+template<class It>
 class ProgressBar {
 public:
-  ProgressBar(int width, const char symbol)
-      : width_(width), symbol_(symbol), pos_(0) {}
+  ProgressBar(It& it, int width, const char symbol='=')
+      : width_(width), 
+        symbol_(symbol), 
+        pos_(0), 
+        iter_(it.begin()),
+        container_(it) 
+  {}
 
-  ProgressBar Update(float percentage);
+  typedef typename It::iterator::value_type value_type;
+  typedef typename It::iterator::reference reference;
 
-  friend std::ostream& operator<<(std::ostream &steam, const ProgressBar &pbar);
+  class iterator 
+    : public std::iterator<typename It::iterator::iterator_category,
+                           value_type,
+                           typename It::iterator::difference_type,
+                           typename It::iterator::pointer,
+                           reference>
+  {
+  private:
+    value_type val_ = *iter_;
+    ProgressBar<It> *parent_;
+
+  public:
+    explicit iterator(ProgressBar<It> *parent, value_type start) 
+      : val_(start), parent_(parent) {}
+
+    iterator& operator++() { 
+      ++(parent_->iter_); 
+      val_ = *(parent_->iter_); 
+      double fraction = static_cast<double>(std::distance(parent_->container_.begin(), 
+            parent_->iter_))/parent_->container_.size();
+      parent_->pos_ = parent_->width_*fraction;
+      std::cout << *parent_;
+      return *this; 
+    }
+
+    iterator operator++(int) { iterator retval = *this; ++(*this); return retval; }
+
+    bool operator==(iterator other) { return val_ == other.val_; }
+    bool operator!=(iterator other) { return !(*this == other); }
+    reference operator*() { return val_; }
+
+  };
+
+  iterator begin() { return iterator(this, *container_.begin()); }
+  iterator end() { return iterator(this, *container_.end()); }
+
+  template<class I>
+  friend std::ostream& operator<<(std::ostream &steam, const ProgressBar<I> &pbar);
 
 private:
   int pos_;
@@ -22,14 +67,12 @@ private:
   char right_delim_{']'};
   char pointer_{'>'};
 
+  typename It::iterator iter_;
+  It& container_;
 }; // class ProgressBar
 
-inline ProgressBar ProgressBar::Update(float percentage) {
-      pos_ = width_*percentage;
-      return *this;
-  }
-
-inline std::ostream& operator<<(std::ostream &stream, const ProgressBar &pbar) {
+template<class It>
+inline std::ostream& operator<<(std::ostream &stream, const ProgressBar<It> &pbar) {
     stream << pbar.left_delim_;
     for (int i=0; i<pbar.width_; i++) {
         if (i < pbar.pos_)
