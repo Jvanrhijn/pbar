@@ -21,13 +21,13 @@ int main() {
     usleep(us);
   }
 
-  // In C++17, the template argument may be omitted:
+  // In C++17, the template argument may be omitted
   // The constructor allows changing the bar symbol (default '=')
   ProgressBar pbar2(v.begin(), v.end(), 50, '#');
 
   std::cout << "\nRange based loops also work" << std::endl;
 
-  for (auto&& i: pbar2) {
+  for (auto& i: pbar2) {
     usleep(us);
   }
 }

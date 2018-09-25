@@ -10,7 +10,7 @@ template<class It>
 class ProgressBar {
 public:
   ProgressBar(It&& it, It&& it_end, int width, const char symbol='=')
-      :  pos_(0), 
+      : pos_(0), 
         width_(width), 
         symbol_(symbol), 
         iter_(it),
@@ -30,7 +30,7 @@ public:
     ProgressBar<It> *parent_;
 
   public:
-    explicit iterator(ProgressBar<It> *parent, typename It::value_type start) 
+    iterator(ProgressBar<It> *parent, typename It::value_type start) 
       : val_(start), parent_(parent) {}
 
     iterator& operator++() { 
