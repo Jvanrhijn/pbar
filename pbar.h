@@ -9,37 +9,35 @@ namespace pbar {
 template<class It>
 class ProgressBar {
 public:
-  ProgressBar(It& it, int width, const char symbol='=')
-      : width_(width), 
+  ProgressBar(It&& it, It&& it_end, int width, const char symbol='=')
+      :  pos_(0), 
+        width_(width), 
         symbol_(symbol), 
-        pos_(0), 
-        iter_(it.begin()),
-        container_(it) 
+        iter_(it),
+        iter_begin_(it),
+        iter_end_(it_end) 
   {}
 
-  typedef typename It::iterator::value_type value_type;
-  typedef typename It::iterator::reference reference;
-
   class iterator 
-    : public std::iterator<typename It::iterator::iterator_category,
-                           value_type,
-                           typename It::iterator::difference_type,
-                           typename It::iterator::pointer,
-                           reference>
+    : public std::iterator<typename It::iterator_category,
+                           typename It::value_type,
+                           typename It::difference_type,
+                           typename It::pointer,
+                           typename It::reference>
   {
   private:
-    value_type val_ = *iter_;
+    typename It::value_type val_ = *iter_;
     ProgressBar<It> *parent_;
 
   public:
-    explicit iterator(ProgressBar<It> *parent, value_type start) 
+    explicit iterator(ProgressBar<It> *parent, typename It::value_type start) 
       : val_(start), parent_(parent) {}
 
     iterator& operator++() { 
       ++(parent_->iter_); 
       val_ = *(parent_->iter_); 
-      double fraction = static_cast<double>(std::distance(parent_->container_.begin(), 
-            parent_->iter_))/parent_->container_.size();
+      double fraction = static_cast<double>(std::distance(parent_->iter_begin_, 
+            parent_->iter_))/std::distance(parent_->iter_begin_, parent_->iter_end_);
       parent_->pos_ = parent_->width_*fraction;
       std::cout << *parent_;
       return *this; 
@@ -49,12 +47,12 @@ public:
 
     bool operator==(iterator other) { return val_ == other.val_; }
     bool operator!=(iterator other) { return !(*this == other); }
-    reference operator*() { return val_; }
+    typename It::reference operator*() { return val_; }
 
   };
 
-  iterator begin() { return iterator(this, *container_.begin()); }
-  iterator end() { return iterator(this, *container_.end()); }
+  iterator begin() { return iterator(this, *iter_); }
+  iterator end() { return iterator(this, *iter_end_); }
 
   template<class I>
   friend std::ostream& operator<<(std::ostream &steam, const ProgressBar<I> &pbar);
@@ -67,8 +65,10 @@ private:
   char right_delim_{']'};
   char pointer_{'>'};
 
-  typename It::iterator iter_;
-  It& container_;
+  //typename It::iterator iter_;
+  It iter_;
+  It iter_begin_;
+  It iter_end_;
 }; // class ProgressBar
 
 template<class It>
