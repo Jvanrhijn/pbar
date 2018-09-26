@@ -38,7 +38,7 @@ public:
     bool operator==(const iterator& other) const;
     bool operator!=(const iterator& other) const;
 
-    reference operator*();
+    reference operator*() const;
 
   private:
     ProgressBar<It>& parent_;
@@ -81,7 +81,7 @@ inline bool ProgressBar<It>::iterator::operator!=(
 }
 
 template<class It>
-inline typename It::reference ProgressBar<It>::iterator::operator*() {
+inline typename It::reference ProgressBar<It>::iterator::operator*() const {
   return *iter_;
 }
 
