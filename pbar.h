@@ -9,39 +9,40 @@ namespace pbar {
 template<class It>
 class ProgressBar {
 public:
-  ProgressBar(It&& it, It&& it_end, int width, const char symbol='=')
-      : pos_(0), 
+  ProgressBar(It it, It it_end, size_t width, const char symbol='=')
+      : count_(0),
         width_(width), 
         symbol_(symbol), 
-        iter_(it),
-        iter_begin_(it),
-        iter_end_(it_end) 
-  {}
-
-  using value_type = typename It::value_type;
-  using reference = typename It::reference;
-
-  class iterator 
-    : public std::iterator<typename It::iterator_category,
-                           value_type,
-                           typename It::difference_type,
-                           typename It::pointer,
-                           reference>
+        iter_(std::move(it)),
+        iter_begin_(iter_),
+        iter_end_(std::move(it_end))
   {
-  private:
-    value_type val_ = *iter_;
-    ProgressBar<It> *parent_;
+    size_ = std::distance(iter_begin_, iter_end_); 
+  }
+
+  struct iterator {
+
+    using iterator_category = typename It::iterator_category;
+    using value_type = typename It::value_type;
+    using difference_type = typename It::difference_type;
+    using pointer = typename It::pointer;
+    using reference = typename It::reference;
 
   public:
-    iterator(ProgressBar<It> *parent, value_type start) 
-      : val_(start), parent_(parent) {}
+    iterator(ProgressBar<It>& parent, It& iter) 
+      : parent_(parent), iter_(iter) {}
 
     iterator& operator++();
     iterator operator++(int);
 
-    bool operator==(iterator other);
-    bool operator!=(iterator other);
-    reference operator*(); 
+    bool operator==(const iterator& other) const;
+    bool operator!=(const iterator& other) const;
+
+    reference operator*();
+
+  private:
+    ProgressBar<It>& parent_;
+    It& iter_;
 
   };
 
@@ -49,11 +50,13 @@ public:
   iterator end();
 
   template<class I>
-  friend std::ostream& operator<<(std::ostream &steam, const ProgressBar<I> &pbar);
+  friend std::ostream& operator<<(std::ostream&, const ProgressBar<I>&);
 
 private:
-  int pos_;
-  int width_;
+  size_t count_;
+  size_t width_;
+  size_t size_;
+
   char symbol_;
   char left_delim_{'['};
   char right_delim_{']'};
@@ -65,66 +68,61 @@ private:
 
 }; // class ProgressBar
 
-
 template<class It>
-using piter = typename ProgressBar<It>::iterator;
-
-template<class It>
-inline bool ProgressBar<It>::iterator::operator==(piter<It> other) {
-  return val_ == other.val_;
+inline bool ProgressBar<It>::iterator::operator==(
+    const ProgressBar<It>::iterator& other) const {
+  return iter_ == other.iter_;
 }
 
 template<class It>
-inline bool ProgressBar<It>::iterator::operator!=(piter<It> other) {
+inline bool ProgressBar<It>::iterator::operator!=(
+    const ProgressBar<It>::iterator& other) const {
   return !(*this == other);
 }
 
 template<class It>
 inline typename It::reference ProgressBar<It>::iterator::operator*() {
-  return val_;
+  return *iter_;
 }
 
 template<class It>
-inline piter<It>& ProgressBar<It>::iterator::operator++() {
-  ++(parent_->iter_); 
-  val_ = *(parent_->iter_); 
-  auto fraction = static_cast<double>(std::distance(parent_->iter_begin_, 
-        parent_->iter_))/std::distance(parent_->iter_begin_, parent_->iter_end_);
-  parent_->pos_ = parent_->width_*fraction;
-  std::cout << *parent_;
+inline typename ProgressBar<It>::iterator& ProgressBar<It>::iterator::operator++() {
+  ++(iter_); 
+  ++parent_.count_;
+  std::clog << parent_;
   return *this; 
 }
 
 template<class It>
-inline piter<It> ProgressBar<It>::iterator::operator++(int) {
+inline typename ProgressBar<It>::iterator ProgressBar<It>::iterator::operator++(int) {
   auto retval = *this;
   ++(*this);
   return retval;
 }
 
 template<class It>
-inline piter<It> ProgressBar<It>::begin() {
-  return ProgressBar<It>::iterator(this, *iter_begin_);
+inline typename ProgressBar<It>::iterator ProgressBar<It>::begin() {
+  return ProgressBar<It>::iterator(*this, iter_begin_);
 }
 
 template<class It>
-inline piter<It> ProgressBar<It>::end() {
-  return ProgressBar<It>::iterator(this, *iter_end_);
+inline typename ProgressBar<It>::iterator ProgressBar<It>::end() {
+  return ProgressBar<It>::iterator(*this, iter_end_);
 }
-
 
 template<class It>
 inline std::ostream& operator<<(std::ostream &stream, const ProgressBar<It> &pbar) {
+  size_t pos = pbar.width_*pbar.count_/pbar.size_;
   stream << pbar.left_delim_;
   for (int i=0; i<pbar.width_; i++) {
-    if (i < pbar.pos_)
+    if (i < pos)
       stream << pbar.symbol_;
-    else if (i == pbar.pos_)
+    else if (i == pos)
       stream << pbar.pointer_;
     else
       stream << " ";
   }
-  stream << pbar.right_delim_ << int(double(pbar.pos_)/pbar.width_*100) << "%\r";
+  stream << pbar.right_delim_ << pbar.count_*100/pbar.size_ << "%\r";
   stream.flush();
   return stream;
 }
@@ -132,3 +130,4 @@ inline std::ostream& operator<<(std::ostream &stream, const ProgressBar<It> &pba
 }; // namespace pbar
 
 #endif // __PBAR_H
+
