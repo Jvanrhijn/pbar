@@ -106,7 +106,10 @@ inline typename ProgressBar<It>::iterator ProgressBar<It>::iterator::operator++(
 
 template<class It>
 inline void ProgressBar<It>::notify() {
+  size_t pos_old = width_*(count_-1)/size_;
   size_t pos = width_*count_/size_;
+  if (pos_old == pos)
+    return;
   std::clog << left_delim_;
   for (int i=0; i<width_; i++) {
     if (i < pos)
