@@ -3,6 +3,10 @@
 A tiny header-only progress bar library for C++. The progress bar is itself an iterator,
 whose `operator++()` is overloaded to output a progress bar to `std::clog` on each call.
 
+<p align="center">
+   <img src="https://i.imgur.com/1nsWz9C.gif">
+</p>
+
 ### Usage
 
 ~~~cpp
