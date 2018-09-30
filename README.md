@@ -16,6 +16,7 @@ using namespace pbar;
 int main() {
   int us = 100000;
   std::vector<int> v = {1, 2, 3, 4, 5};
+  // Construct a ProgressBar for iterating over v, with a total width of 50 characters
   ProgressBar<std::vector<int>::iterator> pbar(v.begin(), v.end(), 50);
   for (auto i = pbar.begin(); i != pbar.end(); i++) {
     usleep(us);
