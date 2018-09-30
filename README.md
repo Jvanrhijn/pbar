@@ -1,9 +1,9 @@
 # Pbar
 
 A tiny header-only progress bar library for C++. The progress bar is itself an iterator,
-whose `operator++()` is overloaded to output a progress bar to stdout on each call.
+whose `operator++()` is overloaded to output a progress bar to `std::clog` on each call.
 
-**Usage**
+### Usage
 
 ~~~cpp
 #include <iostream>
@@ -33,7 +33,15 @@ int main() {
 }
 ~~~
 
-**Credits**
+### Notes
 
-[This](https://stackoverflow.com/a/14539953) StackOverflow answer, where I got part of
+Currently, calling `ProgressBar::begin()` resets the internal counter to zero, so calling `begin()`
+on the progress bar object during iteration will reset the bar. This is not ideal, so for the moment
+you shouldn't call `begin()` on the ProgressBar when you need to access the first element, but
+instead call it on the actual container you're iterating over.
+
+### Credits
+
+* [This](https://stackoverflow.com/a/14539953) StackOverflow answer, where I got part of
 the implementation from.
+* Toby Speight on codereview stackexchange, who helped signicantly improve the code quality.

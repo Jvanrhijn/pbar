@@ -4,7 +4,9 @@
 #include <iostream>
 #include <iterator>
 
+
 namespace pbar {
+
 
 template<class It>
 class ProgressBar {
@@ -20,11 +22,12 @@ public:
 
   struct iterator;
 
-  iterator begin() const {
+  iterator begin() {
+    count_ = 0;
     return it_begin_;
   }
 
-  iterator end() const {
+  iterator end() {
     return it_end_;
   }
 
@@ -45,6 +48,7 @@ private:
 
 }; // class ProgressBar
 
+
 template<class It>
 struct ProgressBar<It>::iterator {
 
@@ -58,13 +62,30 @@ public:
   iterator(ProgressBar<It>& parent, It iter) 
     : parent_(parent), iter_(std::move(iter)) {}
 
-  iterator& operator++();
-  iterator operator++(int);
+  iterator& operator++() {
+    ++(iter_); 
+    ++parent_.count_;
+    parent_.notify();
+    return *this; 
+  }
 
-  bool operator==(const iterator& other) const;
-  bool operator!=(const iterator& other) const;
+  iterator operator++(int) {
+    auto retval = *this;
+    ++(*this);
+    return retval;
+  }
 
-  reference operator*() const;
+  bool operator==(const iterator& other) const {
+    return iter_ == other.iter_;
+  }
+  
+  bool operator!=(const iterator& other) const {
+    return !(*this == other);
+  }
+
+  reference operator*() const {
+    return *iter_;
+  }
 
 private:
   ProgressBar<It>& parent_;
@@ -72,37 +93,6 @@ private:
 
 };
 
-template<class It>
-inline bool ProgressBar<It>::iterator::operator==(
-    const ProgressBar<It>::iterator& other) const {
-  return iter_ == other.iter_;
-}
-
-template<class It>
-inline bool ProgressBar<It>::iterator::operator!=(
-    const ProgressBar<It>::iterator& other) const {
-  return !(*this == other);
-}
-
-template<class It>
-inline typename It::reference ProgressBar<It>::iterator::operator*() const {
-  return *iter_;
-}
-
-template<class It>
-inline typename ProgressBar<It>::iterator& ProgressBar<It>::iterator::operator++() {
-  ++(iter_); 
-  ++parent_.count_;
-  parent_.notify();
-  return *this; 
-}
-
-template<class It>
-inline typename ProgressBar<It>::iterator ProgressBar<It>::iterator::operator++(int) {
-  auto retval = *this;
-  ++(*this);
-  return retval;
-}
 
 template<class It>
 inline void ProgressBar<It>::notify() {
@@ -123,7 +113,7 @@ inline void ProgressBar<It>::notify() {
   std::clog.flush();
 }
 
-}; // namespace pbar
+} // namespace pbar
 
 #endif // __PBAR_H
 
