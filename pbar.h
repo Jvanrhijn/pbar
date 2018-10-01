@@ -4,9 +4,7 @@
 #include <iostream>
 #include <iterator>
 
-
 namespace pbar {
-
 
 template<class It>
 class ProgressBar {
@@ -18,7 +16,9 @@ public:
         symbol_(symbol), 
         it_begin_(*this, std::move(it)),
         it_end_(*this, std::move(it_end))
-  {}
+  {
+    size_ = size_? size_ : 1; // to prevent division by zero in notify()
+  }
 
   struct iterator;
 
