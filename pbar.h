@@ -20,6 +20,10 @@ public:
     size_ = size_? size_ : 1; // to prevent division by zero in notify()
   }
 
+  ~ProgressBar() {
+    std::clog << std::endl;
+  }
+
   struct iterator;
 
   iterator begin() {
