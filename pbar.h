@@ -36,7 +36,7 @@ public:
   }
 
 private:
-  void notify();
+  void notify() const;
 
   size_t count_;
   size_t width_;
@@ -99,7 +99,7 @@ private:
 
 
 template<class It>
-inline void ProgressBar<It>::notify() {
+inline void ProgressBar<It>::notify() const {
   size_t pos_old = width_*(count_-1)/size_;
   size_t pos = width_*count_/size_;
   if (pos_old == pos)
